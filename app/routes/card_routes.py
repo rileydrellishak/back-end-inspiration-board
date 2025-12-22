@@ -8,9 +8,12 @@ bp = Blueprint('cards_bp', __name__, url_prefix='/cards')
 # DELETE /cards/<card_id>
 @bp.delete('/<card_id>')
 def delete_card(card_id):
-    pass
+    return delete_model(Card, card_id)
 
 #PUT /cards/<card_id>/like
 @bp.put('/<card_id>/like')
 def like_card(card_id):
-    pass
+    card = validate_model(Card, card_id)
+    card.likes_count += 1
+    db.session.commit()
+    return Response(status=204, mimetype='application/json')

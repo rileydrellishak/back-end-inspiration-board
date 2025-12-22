@@ -33,11 +33,33 @@ def create_model(cls, model_data):
     db.session.add(new_model)
     db.session.commit()
 
-    return new_model.to_dict(), 201
+    return new_model.to_dict()
 
 # get models with filters
+def get_models_with_filters(cls, filters=None):
+    query = db.select(cls)
 
-# modify model (patch) 
+    if filters:
+        for attribute, value in filters.items():
+            if hasattr(cls, attribute):
+                query = query.where(getattr(cls, attribute).ilike(f"%{value}%"))
+    
+    else:
+        query = query.order_by(cls.title)
+
+    models = db.session.scalars(query)
+    models_response = [model.to_dict() for model in models]
+    return models_response
+
+# modify model (patch)
+def update_model(obj, data):
+    for attr, value in data.items():
+        if hasattr(obj, attr):
+            setattr(obj, attr, value)
+    
+    db.session.commit()
+
+    return Response(status=204, mimetype='application/json')
 
 # replace model (put)
 
