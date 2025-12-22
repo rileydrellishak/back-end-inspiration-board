@@ -44,8 +44,8 @@ def get_models_with_filters(cls, filters=None):
             if hasattr(cls, attribute):
                 query = query.where(getattr(cls, attribute).ilike(f"%{value}%"))
     
-    else:
-        query = query.order_by(cls.title)
+    # else:
+    #     query = query.order_by(cls.title)
 
     models = db.session.scalars(query)
     models_response = [model.to_dict() for model in models]

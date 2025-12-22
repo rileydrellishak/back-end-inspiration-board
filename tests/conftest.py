@@ -41,19 +41,27 @@ def client(app):
 # This fixture creates a card and saves it in the database
 @pytest.fixture
 def one_card(app):
+    board_1 = Board(
+        title='Encouragement 💪',
+        owner='Iris'
+    )
     new_card = Card(
-        message='You rock! 🤘'
+        message='You rock! 🤘',
+        board_id=1,
+        likes_count=0
         )
-    db.session.add(new_card)
+    db.session.add_all([board_1, new_card])
     db.session.commit()
 
 @pytest.fixture
 def two_cards(app):
     card_1 = Card(
-        message='You rock! 🤘'
+        message='You rock! 🤘',
+        likes_count=0
     )
     card_2 = Card(
-        message='Here comes the sun ☀️'
+        message='Here comes the sun ☀️',
+        likes_count=0
     )
     db.session.add_all([card_1, card_2])
     db.session.commit()
@@ -61,13 +69,16 @@ def two_cards(app):
 @pytest.fixture
 def three_cards(app):
     card_1 = Card(
-        message='You rock! 🤘'
+        message='You rock! 🤘',
+        likes_count=0
     )
     card_2 = Card(
-        message='Here comes the sun ☀️'
+        message='Here comes the sun ☀️',
+        likes_count=0
     )
     card_3 = Card(
-        message='Like if you like snow ❄️'
+        message='Like if you like snow ❄️',
+        likes_count=0
     )
     db.session.add_all([card_1, card_2, card_3])
     db.session.commit()
@@ -109,4 +120,29 @@ def three_boards(app):
         owner='Iris'
     )
     db.session.add_all([board_1, board_2, board_3])
+    db.session.commit()
+
+@pytest.fixture
+def board_with_cards(app):
+    board_1 = Board(
+        title='Words of Wisdom ✨',
+        owner='Riley'
+    )
+    db.session.add(board_1)
+    card_1 = Card(
+        message='You rock! 🤘',
+        likes_count=0,
+        board_id=1
+    )
+    card_2 = Card(
+        message='Think positively ✨',
+        likes_count=0,
+        board_id=1
+    )
+    card_3 = Card(
+        message='Follow your curiosity 🤔',
+        likes_count=0,
+        board_id=1
+    )
+    db.session.add_all([card_1, card_2, card_3])
     db.session.commit()

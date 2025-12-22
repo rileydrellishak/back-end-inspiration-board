@@ -12,12 +12,17 @@ def get_all_boards():
     filters = request.args
     return get_models_with_filters(Board, filters)
 
+@bp.get('/<board_id>')
+def get_board_by_id(board_id):
+    board = validate_model(Board, board_id)
+    return board.to_dict(), 200
+
 # POST /boards
 @bp.post('')
 def create_board():
     request_body = request.get_json()
     new_board = create_model(Board, request_body)
-    return new_board.to_dict(), 201
+    return new_board, 201
 
 # GET /boards/<board_id>/cards
 @bp.get('/<board_id>/cards')
