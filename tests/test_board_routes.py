@@ -1,4 +1,5 @@
 from app.models.board import Board
+from app.models.card import Card
 from app.db import db
 import pytest
 
@@ -19,17 +20,20 @@ def test_get_all_boards(client, three_boards):
         {
             'id': 1,
             'title': 'Words of Wisdom ✨',
-            'owner': 'Riley'
+            'owner': 'Riley',
+            'card_ids': []
         },
         {
             'id': 2,
             'title': 'Happy Songs 🎵',
-            'owner': 'Iris'
+            'owner': 'Iris',
+            'card_ids': []
         },
         {
             'id': 3,
             'title': 'Encouragement 💪',
-            'owner': 'Iris'
+            'owner': 'Iris',
+            'card_ids': []
         }
     ]
 
@@ -39,7 +43,8 @@ def test_get_board_by_id(client, two_boards):
     assert response_body == {
         'id': 1,
         'title': 'Words of Wisdom ✨',
-        'owner': 'Riley'
+        'owner': 'Riley',
+        'card_ids': []
     }
 
 def test_get_board_by_id_400_invalid(client, two_boards):
@@ -69,7 +74,8 @@ def test_create_board(client):
     assert response_body == {
         'id': 1,
         'owner': 'Gina',
-        'title': 'Morning Affirmations 🌄'
+        'title': 'Morning Affirmations 🌄',
+        'card_ids': []
     }
 
     query = db.select(Board).where(Board.id == 1)
@@ -79,6 +85,7 @@ def test_create_board(client):
     assert new_board.title == 'Morning Affirmations 🌄'
     assert new_board.owner == 'Gina'
     assert new_board.id == 1
+    assert new_board.cards == []
 
 def test_get_cards_for_board_by_id(client, board_with_cards):
     response = client.get('/boards/1/cards')
@@ -97,11 +104,22 @@ def test_get_cards_for_board_by_id(client, board_with_cards):
     
 def test_post_card_to_board_by_id(client, one_board):
     response = client.post('/boards/1/cards', json={
-        'title': 'Morning Affirmations 🌄',
-        'owner': 'Gina'
+        'message': 'Learning one concept at a time still counts as progress 💭',
     })
     response_body = response.get_json()
     
     assert response.status_code == 201
+    assert response_body == {
+        'id': 1,
+        'likes_count': 0,
+        'board_id': 1,
+        'message': 'Learning one concept at a time still counts as progress 💭'
+    }
 
-    # query card table to get card w id = 1 and board_id = 1
+    query = db.select(Board).where(Board.id == 1)
+    board = db.session.scalar(query)
+
+    assert board.cards
+    assert len(board.cards) == 1
+    for card in board.cards:
+        assert card.board_id == 1
