@@ -32,12 +32,25 @@ def get_cards_for_board_by_id(board_id):
     return response, 200
 
 
-# POST /boards/<board_id>/cards
+# # POST /boards/<board_id>/cards
+# @bp.post('/<board_id>/cards')
+# def post_card_to_board_by_id(board_id):
+#     board = validate_model(Board, board_id)
+#     request_body = request.get_json()
+#     new_card = create_model(Card, request_body)
+#     new_card['board_id'] = board.id
+#     new_card['board'] = board.title
+#     return new_card, 201
+
 @bp.post('/<board_id>/cards')
 def post_card_to_board_by_id(board_id):
     board = validate_model(Board, board_id)
     request_body = request.get_json()
-    new_card = create_model(Card, request_body)
-    new_card['board_id'] = board.id
-    new_card['board'] = board.title
-    return new_card, 201
+    
+    new_card = Card.from_dict(request_body)
+    new_card.board_id = board.id     
+    
+    db.session.add(new_card)
+    db.session.commit()
+    
+    return new_card.to_dict(), 201

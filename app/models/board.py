@@ -12,6 +12,7 @@ class Board(db.Model):
             "id": self.id,
             "title": self.title,
             "owner": self.owner,
+            "card_ids": [card.id for card in self.cards]
         }
 
     @classmethod
