@@ -104,7 +104,7 @@ def test_get_cards_for_board_by_id(client, board_with_cards):
     
 def test_post_card_to_board_by_id(client, one_board):
     response = client.post('/boards/1/cards', json={
-        'message': 'Learning one concept at a time still counts as progress 💭',
+        'message': 'progress 💭',
     })
     response_body = response.get_json()
     
@@ -113,7 +113,7 @@ def test_post_card_to_board_by_id(client, one_board):
         'id': 1,
         'likes_count': 0,
         'board_id': 1,
-        'message': 'Learning one concept at a time still counts as progress 💭'
+        'message': 'progress 💭'
     }
 
     query = db.select(Board).where(Board.id == 1)
@@ -123,3 +123,11 @@ def test_post_card_to_board_by_id(client, one_board):
     assert len(board.cards) == 1
     for card in board.cards:
         assert card.board_id == 1
+
+def test_post_card_to_board_error_msg_too_long(client, one_board):
+    response = client.post('/boards/1/cards', json={
+        'message': 'i am going to write a really long message and see if it is more than 40 characters I am so excited for this super long and inspiring message',
+    })
+    response_body = response.get_json()
+    assert response_body == {'message': 'Messages must be 40 characters or less.'}
+    assert response.status_code == 400

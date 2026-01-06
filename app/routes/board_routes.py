@@ -3,6 +3,7 @@ from app.models.board import Board
 from app.models.card import Card
 from ..db import db
 from app.routes.route_utilities import create_model, delete_model, get_models_with_filters, update_model, validate_model
+from flask import abort, make_response, Response
 
 bp = Blueprint('boards_bp', __name__, url_prefix='/boards')
 
@@ -31,12 +32,23 @@ def get_cards_for_board_by_id(board_id):
     response = [card.to_dict() for card in board.cards]
     return response, 200
 
+def validate_card(card_data):
+    # {'message':'...'}
+    message = card_data['message']
+    msg_length = len(message)
+    if msg_length > 40:
+        response = {'message': 'Messages must be 40 characters or less.'}
+        abort(make_response(response, 400))
+
+    return card_data
+
 @bp.post('/<board_id>/cards')
 def post_card_to_board_by_id(board_id):
     board = validate_model(Board, board_id)
     request_body = request.get_json()
+    card = validate_card(request_body)
     
-    new_card = Card.from_dict(request_body)
+    new_card = Card.from_dict(card)
     new_card.board_id = board.id     
     
     db.session.add(new_card)
