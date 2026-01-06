@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response
 from app.models.card import Card
 from ..db import db
-from app.routes.route_utilities import create_model, delete_model, validate_model
+from app.routes.route_utilities import delete_model, validate_model
 
 bp = Blueprint('cards_bp', __name__, url_prefix='/cards')
 

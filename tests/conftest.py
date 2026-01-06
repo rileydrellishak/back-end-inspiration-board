@@ -55,6 +55,10 @@ def one_card(app):
 
 @pytest.fixture
 def two_cards(app):
+    board_1 = Board(
+        title='Encouragement 💪',
+        owner='Iris'
+    )
     card_1 = Card(
         message='You rock! 🤘',
         likes_count=0
@@ -63,6 +67,7 @@ def two_cards(app):
         message='Here comes the sun ☀️',
         likes_count=0
     )
+    db.session.add([board_1])
     db.session.add_all([card_1, card_2])
     db.session.commit()
 

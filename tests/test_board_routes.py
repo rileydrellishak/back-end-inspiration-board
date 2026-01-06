@@ -3,7 +3,7 @@ from app.models.card import Card
 from app.db import db
 import pytest
 
-def test_boards_no_saved_boards(client):
+def test_get_all_boards_no_saved_boards(client):
     response = client.get('/boards')
     response_body = response.get_json()
 
@@ -16,6 +16,65 @@ def test_get_all_boards(client, three_boards):
 
     assert response.status_code == 200
     assert len(response_body) == 3
+    assert response_body == [
+        {
+            'id': 1,
+            'title': 'Words of Wisdom ✨',
+            'owner': 'Riley',
+            'card_ids': []
+        },
+        {
+            'id': 2,
+            'title': 'Happy Songs 🎵',
+            'owner': 'Iris',
+            'card_ids': []
+        },
+        {
+            'id': 3,
+            'title': 'Encouragement 💪',
+            'owner': 'Iris',
+            'card_ids': []
+        }
+    ]
+
+def test_get_all_boards_with_query_params_owner(client, three_boards):
+    query_params = '?owner=Riley'
+    response = client.get(f'/boards{query_params}')
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body == [
+        {
+            'id': 1,
+            'title': 'Words of Wisdom ✨',
+            'owner': 'Riley',
+            'card_ids': []
+        }
+    ]
+    assert response_body[0]['owner'] == 'Riley'
+
+def test_get_all_boards_with_query_params_title(client, three_boards):
+    query_params = '?title=songs'
+    response = client.get(f'/boards{query_params}')
+    response_body = response.get_json()
+
+    assert response.status_code == 200
+    assert response_body == [
+        {
+            'id': 2,
+            'title': 'Happy Songs 🎵',
+            'owner': 'Iris',
+            'card_ids': []
+        }
+    ]
+    assert response_body[0]['title'] == 'Happy Songs 🎵'
+
+def test_get_all_boards_with_query_params_invalid_but_works(client, three_boards):
+    query_params = '?message=hello'
+    response = client.get(f'/boards{query_params}')
+    response_body = response.get_json()
+
+    assert response.status_code == 200
     assert response_body == [
         {
             'id': 1,
@@ -50,6 +109,7 @@ def test_get_board_by_id(client, two_boards):
 def test_get_board_by_id_400_invalid(client, two_boards):
     response = client.get('/boards/one')
     response_body = response.get_json()
+
     assert response.status_code == 400
     assert response_body == {
         'message': 'Board one invalid'
@@ -58,6 +118,7 @@ def test_get_board_by_id_400_invalid(client, two_boards):
 def test_get_board_by_id_404_not_found(client, two_boards):
     response = client.get('/boards/4')
     response_body = response.get_json()
+
     assert response.status_code == 404
     assert response_body == {
         'message': 'Board 4 not found'
@@ -86,6 +147,19 @@ def test_create_board(client):
     assert new_board.owner == 'Gina'
     assert new_board.id == 1
     assert new_board.cards == []
+
+def test_create_board_missing_keys(client):
+    response = client.post('/boards', json={
+        'owner': 'Riley'
+    })
+    response_body = response.get_json()
+
+    assert response_body['details'] == 'Invalid data'
+    assert response.status_code == 400
+
+    query = db.select(Board).where(Board.owner == 'Riley')
+    new_board = db.session.scalar(query)
+    assert new_board is None
 
 def test_get_cards_for_board_by_id(client, board_with_cards):
     response = client.get('/boards/1/cards')
@@ -130,4 +204,13 @@ def test_post_card_to_board_error_msg_too_long(client, one_board):
     })
     response_body = response.get_json()
     assert response_body == {'message': 'Messages must be 40 characters or less.'}
+    assert response.status_code == 400
+
+def test_post_card_to_board_error_msg_empty(client, one_board):
+    response = client.post('/boards/1/cards', json={
+        'message': '',
+    })
+    response_body = response.get_json()
+
+    assert response_body == {'message': 'Messages cannot be empty!'}
     assert response.status_code == 400

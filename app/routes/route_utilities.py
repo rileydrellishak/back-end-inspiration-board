@@ -51,18 +51,6 @@ def get_models_with_filters(cls, filters=None):
     models_response = [model.to_dict() for model in models]
     return models_response
 
-# modify model (patch)
-def update_model(obj, data):
-    for attr, value in data.items():
-        if hasattr(obj, attr):
-            setattr(obj, attr, value)
-    
-    db.session.commit()
-
-    return Response(status=204, mimetype='application/json')
-
-# replace model (put)
-
 # delete model
 def delete_model(cls, model_id):
     model_to_delete = validate_model(cls, model_id)
