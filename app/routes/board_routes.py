@@ -39,6 +39,9 @@ def validate_card(card_data):
     if msg_length > 40:
         response = {'message': 'Messages must be 40 characters or less.'}
         abort(make_response(response, 400))
+    elif msg_length == 0 or not msg_length:
+        response = {'message': 'Messages cannot be empty!'}
+        abort(make_response(response, 400))
 
     return card_data
 
